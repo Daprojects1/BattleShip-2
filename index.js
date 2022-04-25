@@ -37,8 +37,8 @@ function randomIntFromInterval(min, max) { // min and max included
 const createShips = (shipsLength, shipCoordinates, allCoordinates, shipName) => {
     const ships = []
     for (let i = 0; i < shipsLength; i++) {
-        const shipArr = []
         for (let j = 0; j < shipsLength; j++) {
+            const shipArr = []
             const negCoordinate = allCoordinates[shipCoordinates[j] - 1]
             const ship = allCoordinates[shipCoordinates[j]] || negCoordinate
             const nextShip = allCoordinates[shipCoordinates[j] + 1] || negCoordinate - 1
@@ -59,8 +59,8 @@ const createShips = (shipsLength, shipCoordinates, allCoordinates, shipName) => 
                 shipDom3.classList.add("ship")
                 shipArr.push(nextShip1)
             }
+            ships.push(shipArr)
         }
-        ships.push(shipArr)
         return ships
     }
 }
