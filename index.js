@@ -157,13 +157,40 @@ const makeBoard = (name) => {
 }
 
 const GameBoard = (shipsLength) => {
-    const shipNames = ["playerShip", "computerShip"]
+    const gameConfig = {
+        player1:0,
+        computer:1,
+        currentPlayer: 0,
+        shipNames: ["playerShip", "computerShip"],
+        gameOver:false
+    }
+    const {player1, computer, shipNames, currentPlayer, gameOver} = gameConfig
+
     const { playerBoard, shipCoordinates, allCoordinates } = makeBoard(shipNames[0])
     const { playerBoard: compBoad,
         shipCoordinates: compShipCoord,
         allCoordinates: compCoord } = makeBoard(shipNames[1])
     const playerShipsCoord = createShips(shipsLength, shipCoordinates, allCoordinates, shipNames[0])
     const computerShipsCoord = createShips(shipsLength, compShipCoord, compCoord, shipNames[1])
+    const p = document.createElement("h1")
+    const b = document.querySelector("body")
+    p.innerText = `CURRENT PLAYER: ${shipNames[currentPlayer]}`
+    b.appendChild(p)
+    const GameLoop =()=>{
+        const {player1, computer, shipNames, currentPlayer, gameOver} = gameConfig
+        p.innerText = `CURRENT PLAYER: ${shipNames[currentPlayer]}`
+        if (currentPlayer === computer){ 
+           const player1Dom =  document.querySelector(`.${shipNames[player1]}`)
+           player1Dom.classList.add("none")
+        } else if (currentPlayer === player1){
+            const computerDom =  document.querySelector(`.${shipNames[computer]}`)
+            computerDom.classList.add("none")
+        }
+        if (!gameOver){
+            requestAnimationFrame(GameLoop)
+        } 
+    }
+    requestAnimationFrame(GameLoop)
 }
 
 GameBoard(4)

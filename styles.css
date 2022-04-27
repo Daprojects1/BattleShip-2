@@ -5,6 +5,7 @@
     grid-template-rows: repeat(10, 50px);
     width: 70vw;
     max-width: 500px;
+    position: relative;
     justify-content: center;
 }
 
@@ -23,9 +24,8 @@
     content: "A B C D E F G H I J K";
     position: absolute;
     font-size: 36px;
-    letter-spacing: 8px;
-    padding-left: 5px;
-    top: 40px;
+    letter-spacing: 7.5px;
+    top: -40px;
 }
 
 .computerShip::before {
@@ -34,7 +34,7 @@
     letter-spacing: 8px;
     padding-left: 5px;
     font-size: 35px;
-    bottom: 270px;
+    top: -40px;
 }
 .playerShip::after{
     content: "0 1 2 3 4 5 6 7 8 9";
@@ -44,7 +44,6 @@
     bottom: 50px;
     left: -40px;
     letter-spacing: 9px;
-    padding-left: 5px;
 
 }
 .computerShip::after{
@@ -55,7 +54,6 @@
     bottom: 50px;
     left: -40px;
     letter-spacing: 9px;
-    padding-left: 5px;
 
 }
 
