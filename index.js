@@ -33,7 +33,11 @@ function randomIntFromInterval(min, max) { // min and max included
     return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
-
+const changeMessageBoard = (msg) => {
+    setTimeout(() => {       
+        document.querySelector(".msg").innerText = msg
+    }, 1000)
+}
 const createShips = (shipsLength, shipCoordinates, allCoordinates, shipName) => {
     const ships = []
     for (let i = 0; i < shipsLength; i++) {
@@ -131,7 +135,7 @@ const initBoardOnPage = (board, shipName) => {
 
 const initBoardArr = (board, name) => {
     if (!board.length && typeof board === "object") {
-        const letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"]
+        const letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]
         const length = 10
         for (let i = 0; i < length; i++) {
             const mainObj = {}
@@ -156,6 +160,42 @@ const makeBoard = (name) => {
     return { playerBoard, shipCoordinates, allCoordinates }
 }
 
+const playerShipDetails = (shipCoordinates) => {
+    return {
+        ships: [...shipCoordinates.map(ship => { return { ship, isHit: [], isSunk: ship.length === 0 } })],
+        damageShip(coord) {
+          
+            const allShips = this.ships
+            const hitShip = allShips.map(ships => {
+                const shipLength = ships.ship.length;
+                ships.ship = ships.ship.filter(shipCoord => shipCoord !== coord)
+                if (shipLength > ships.ship.length) {
+                    ships.isHit.push(coord)
+                  
+                    return { ship: ships, coord}
+                }
+                 else return false
+            })
+            return hitShip
+        },
+        handleHitShip(arr, playerDom, gamesConfig,coord) {
+            const { shipNames, currentPlayer } = gamesConfig
+            if (arr.filter(item => typeof item === "object").length >= 1) {
+                  setTimeout(() => {
+                        playerDom.querySelector(`#${coord}`).classList.add("green")
+                        // alert(`${shipNames[currentPlayer]} HIT ${currentPlayer === 0 ? shipNames[1] : shipNames[0]} at ${coord}`)
+                    }, 600)
+            } else {
+                setTimeout(() => {
+                    // alert(shipNames[currentPlayer] + " Miss")
+                    playerDom.querySelector(`#${coord}`).classList.add("red")
+                },700)
+            }
+        }
+    }
+    
+}
+
 const GameBoard = (shipsLength) => {
     const gameConfig = {
         player1:0,
@@ -165,13 +205,14 @@ const GameBoard = (shipsLength) => {
         gameOver:false
     }
     const {player1, computer, shipNames, currentPlayer, gameOver} = gameConfig
-
     const { playerBoard, shipCoordinates, allCoordinates } = makeBoard(shipNames[0])
     const { playerBoard: compBoad,
         shipCoordinates: compShipCoord,
         allCoordinates: compCoord } = makeBoard(shipNames[1])
     const playerShipsCoord = createShips(shipsLength, shipCoordinates, allCoordinates, shipNames[0])
     const computerShipsCoord = createShips(shipsLength, compShipCoord, compCoord, shipNames[1])
+    const player1ShipDets = playerShipDetails(playerShipsCoord)
+    const computerShipsDets = playerShipDetails(computerShipsCoord)
     const p = document.createElement("h1")
     const b = document.querySelector("body")
     p.innerText = `CURRENT PLAYER: ${shipNames[currentPlayer]}`
@@ -179,18 +220,43 @@ const GameBoard = (shipsLength) => {
     const GameLoop =()=>{
         const {player1, computer, shipNames, currentPlayer, gameOver} = gameConfig
         p.innerText = `CURRENT PLAYER: ${shipNames[currentPlayer]}`
-        if (currentPlayer === computer){ 
-           const player1Dom =  document.querySelector(`.${shipNames[player1]}`)
-           player1Dom.classList.add("none")
-        } else if (currentPlayer === player1){
-            const computerDom =  document.querySelector(`.${shipNames[computer]}`)
-            computerDom.classList.add("none")
+        const player1Dom =  document.querySelector(`.${shipNames[player1]}`)
+        const computerDom = document.querySelector(`.${shipNames[computer]}`)
+        // computerDom.classList.add("none")
+        const inputattack = document.querySelector(".inputAttack")
+        if (currentPlayer === computer && !gameOver) { 
+            const selectedValue = randomIntFromInterval(0, allCoordinates.length - 1)
+            const compSelectedCoord = allCoordinates[selectedValue]
+            changeMessageBoard(`computer choose ${compSelectedCoord}`)
+            player1Dom.querySelector(`#${compSelectedCoord}`)    
+            const hitShips =  player1ShipDets.damageShip(compSelectedCoord)
+            player1ShipDets.handleHitShip(hitShips, player1Dom, gameConfig,compSelectedCoord)
+            gameConfig.currentPlayer = 0
+            GameLoop()
+        } else if (currentPlayer === player1 && !gameOver) {
+            inputattack.addEventListener("keydown", (e) => {
+                e.stopImmediatePropagation()
+                e.stopPropagation()
+                const value = e.target.value.toLowerCase()
+                if (e.code === "Enter") {             
+                    if (e.target.value.length && allCoordinates.includes(value)) { 
+                        const hitShips = computerShipsDets.damageShip(value)
+                        computerShipsDets.handleHitShip(hitShips, computerDom, gameConfig, value)
+                        changeMessageBoard(`you choose ${value}`)
+                        gameConfig.currentPlayer = 1
+                        GameLoop()
+                    } else if (!value.length || !allCoordinates.includes(value)) {
+                        changeMessageBoard("please input the correct coordinates")
+                        
+                    } 
+                }
+            })
+            // computerDom.classList.add("none")
+            // console.log(attack.c)
+            // player1Dom.classList.remove("none")
         }
-        if (!gameOver){
-            requestAnimationFrame(GameLoop)
-        } 
     }
-    requestAnimationFrame(GameLoop)
+    GameLoop()
 }
 
 GameBoard(4)

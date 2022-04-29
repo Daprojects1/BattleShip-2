@@ -21,18 +21,19 @@
 
 
 .playerShip::before {
-    content: "A B C D E F G H I J K";
+    content: "A B C D E F G H I J ";
     position: absolute;
     font-size: 36px;
-    letter-spacing: 7.5px;
+    letter-spacing: 9px;
     top: -40px;
+    left: 6.5px;
 }
 
 .computerShip::before {
-    content: "A B C D E F G H I J K";
+    content: "A B C D E F G H I J";
     position: absolute;
-    letter-spacing: 8px;
-    padding-left: 5px;
+    letter-spacing: 10px;
+    left: 6.5px;
     font-size: 35px;
     top: -40px;
 }
@@ -60,3 +61,43 @@
 .none {
     display: none;
 }
+
+.red{
+    background-color: red;
+}
+
+.green{
+    background-color: green;
+}
+
+.compAttack{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.compAttack input {
+    width: 300px;
+    padding: 10px;
+}
+
+.message-board{
+    min-width:400px;
+    height: 100px;
+    border: 1px solid grey;
+    padding: 10px;
+    color: white;
+    background-color:rgb(25, 21, 21);
+
+}
+
+.message-board h1{
+    font-size: 20px;
+    margin: 0;
+    text-align: center;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
