@@ -1,34 +1,3 @@
-
-
-// class GameBoard {
-//     constructor(shipsLength) {
-//         this.shipsLength = shipsLength
-//         this.board =[]
-//     }
-//     initBoardArr() {
-//         const letters= ["a","b","c","d","e","f","g"]
-//         const length =7
-//         for (let i = 0; i < length; i++){
-//             const mainObj = {}
-//             mainObj.positions =[]
-//             for (let j = 0; j < length; j++){
-//                 const obj = {}
-//                 obj.coordinates = `${letters[i]}${j}` 
-//                 mainObj.positions.push(obj)
-//             }
-//             this.board.push(mainObj)
-//         }
-//         this.initBoardOnPage()
-//     }
-//     initBoardOnPage() {
-//         const body = document.querySelector("body")
-
-//     }
-
-// }
-
-// const game = new GameBoard()
-// game.initBoardArr()
 function randomIntFromInterval(min, max) { // min and max included 
     return Math.floor(Math.random() * (max - min + 1) + min)
 }
@@ -63,12 +32,12 @@ const createShips = (shipsLength, shipCoordinates, allCoordinates, shipName) => 
             shipDom.classList.add("ship")
             shipArr.push(ship)
             if (shipDom2) {
-                // at times the coordinates are null as it doesnt have a follow up value.
+                // at times the coordinates are null as it may npt select a valid value.
                 shipDom2.classList.add("ship")
                 shipArr.push(nextShip)
             }
             if (shipDom3) {
-                // at times the coordinates are null as it doesnt have a follow up value.
+                // at times the coordinates are null as it may not select a valid value.
                 shipDom3.classList.add("ship")
                 shipArr.push(nextShip1)
             }
@@ -141,6 +110,7 @@ const initBoardOnPage = (board, shipName) => {
     }
 }
 
+// initializes the array for board items and then calls the init board on the page.
 const initBoardArr = (board, name) => {
     if (!board.length && typeof board === "object") {
         const letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]
@@ -167,15 +137,23 @@ const makeBoard = (name) => {
     return { playerBoard, shipCoordinates, allCoordinates }
 }
 
+// handles the details that affect each ship. 
 const playerShipDetails = (shipCoordinates) => {
     return {
-        ships: [...shipCoordinates.map(ship => { return { ship, isHit: [], isSunk: false} })],
-        damageShip(coord) {
+        allHitValues:[],
+        ships: [...shipCoordinates.map(ship => { return { ship, isHit: [], isSunk: false, sLength: ship.length} })],
+        damageShip(coord, gameConfig) {
             const allShips = this.ships.map(ships => ships.ship)
+            // rewrite this logic.  Can be very hard to read.
             const hitShip = allShips.map((ship, i) => {
                 const currentShip = this.ships[i]
                 const shipLength = ship.length;
                 ship = ship.filter(shipCoord => shipCoord !== coord)
+                if (this.beenSelected(coord)) {
+                    gameConfig.sameValue = true
+                  return "been already hit"
+                } 
+                this.allHitValues.push(coord)
                 if (shipLength > ship.length) {             
                     if (ship.length === currentShip.isHit.length) currentShip.isSunk = true
                     currentShip.isHit.push(coord)    
@@ -183,6 +161,7 @@ const playerShipDetails = (shipCoordinates) => {
                 } 
                  else return false
             })
+ 
             return hitShip
         },
         handleHitShip(currentShip, playerDom, gamesConfig, coord) {
@@ -199,27 +178,50 @@ const playerShipDetails = (shipCoordinates) => {
                     changeMessageBoard(`${shipNames[currentPlayer]} HIT ${currentPlayer === 0 ? shipNames[1] : shipNames[0]} at ${coord}`,timeoutVal)
                 }
                 playerDom.querySelector(`#${coord}`).classList.add("green")
+            } else if (currentShip.filter(i => typeof i === "string").length >= 1) {
+                changeMessageBoard(`Sorry cannot hit the same spot again !`)
             } else {
                 changeMessageBoard(`${shipNames[currentPlayer]} has MISSED at ${coord}`, timeoutVal)
                 playerDom.querySelector(`#${coord}`).classList.add("red")
             }
         },
-        isAllShipsSunk() {
+        beenSelected(coord) {
+            // function to make sure that you dont select a value twice. 
+            // const isBeenSelected = this.allHitValues.filter(hitCoord => hitCoord === coord)
+            // console.log(isBeenSelected)
+            // if (isBeenSelected.length >= 1) return true 
+            // else false
+        }
+        ,
+        isAllShipsSunk(currentPlayer) {
             const isShipSunk = this.ships.map(ship => ship.isSunk)
+            // const isShipHit = this.ships.map(ship => ship.isHit) needs work. checking if hit
             if (isShipSunk.includes(false)) return null
-            else return true
+            else {
+                changeMessageBoard(`${currentPlayer} has WON!`, 1100)
+                return true
+            }
         }
     }
     
 }
 
+const smartSelectCoord = (selectedValue) => {
+    return selectedValue
+}
+
+const canChangeCurrentPlayer = (gameConfig, val) => {
+    if (!gameConfig.sameValue) gameConfig.currentPlayer = val
+}
 const GameBoard = (shipsLength) => {
     const gameConfig = {
         player1: 0,
         computer: 1,
         currentPlayer: 0,
         shipNames: ["playerShip", "computerShip"],
-        gameOver: false
+        gameOver: false,
+        gameStarted: null,
+        sameValue: false
     }
     let {player1, computer, shipNames} = gameConfig
     const { playerBoard, shipCoordinates, allCoordinates } = makeBoard(shipNames[0])
@@ -233,7 +235,8 @@ const GameBoard = (shipsLength) => {
     const p = document.createElement("h1")
     const b = document.querySelector("body")
     b.appendChild(p)
-    const GameLoop =()=>{
+    const GameLoop = () => {
+        gameConfig.sameValue = false
         const { currentPlayer } = gameConfig
         const player1Dom =  document.querySelector(`.${shipNames[player1]}`)
         const computerDom = document.querySelector(`.${shipNames[computer]}`)
@@ -241,42 +244,39 @@ const GameBoard = (shipsLength) => {
         const inputattack = document.querySelector(".inputAttack")
         changeMessageBoard()  
         if (currentPlayer === computer && !gameConfig.gameOver) { 
+            gameConfig.gameStarted = true
             const selectedValue = randomIntFromInterval(0, allCoordinates.length - 1)
-            const compSelectedCoord = allCoordinates[selectedValue]
-            // changeMessageBoard(`computer choose ${compSelectedCoord}`, 800)
+            const compSelectedCoord = allCoordinates[smartSelectCoord(selectedValue)] 
             player1Dom.querySelector(`#${compSelectedCoord}`)    
-            const hitShips = player1ShipDets.damageShip(compSelectedCoord)
+            const hitShips = player1ShipDets.damageShip(compSelectedCoord, gameConfig)
             player1ShipDets.handleHitShip(hitShips, player1Dom, gameConfig, compSelectedCoord)
-            gameConfig.gameOver = player1ShipDets.isAllShipsSunk()
-            gameConfig.currentPlayer = 0
+            gameConfig.gameOver = player1ShipDets.isAllShipsSunk(shipNames[currentPlayer])
+            canChangeCurrentPlayer(gameConfig,0)
             GameLoop()
         } else if (currentPlayer === player1 && !gameConfig.gameOver) {
             const attackComp = (e) => {
-                e.stopImmediatePropagation()
-                e.stopPropagation()
                 const value = e.target.value.toLowerCase()
-                if (e.code === "Enter") {             
+                if (e.code === "Enter" && !gameConfig.gameOver) {             
                     if (e.target.value.trim().length && allCoordinates.includes(value)) { 
-                        const hitShips = computerShipsDets.damageShip(value)
+                        const hitShips = computerShipsDets.damageShip(value, gameConfig)
                         computerShipsDets.handleHitShip(hitShips, computerDom, gameConfig, value)
-                        // changeMessageBoard(`you choose ${value}`,350)
-                        gameConfig.gameOver = true
-                        gameConfig.currentPlayer = 1
-                       GameLoop()
+                        gameConfig.gameOver = computerShipsDets.isAllShipsSunk(shipNames[currentPlayer])
+                        canChangeCurrentPlayer(gameConfig,1)
+                        GameLoop()
                     } else if (!value.length || !allCoordinates.includes(value)) {
                         changeMessageBoard()
                         changeMessageBoard("please input the correct coordinates",500)
                     } 
                 }
             }
-            if (gameConfig.gameOver) {
-                inputattack.removeEventListener("keydown", attackComp)    
-            } else {
-                
+            if (!gameConfig.gameStarted) {          
                 inputattack.addEventListener("keydown", attackComp)
+                gameConfig.gameStarted = true
+            }
+            if (gameConfig.gameOver) {
+                inputattack.removeEventListener("keydown", attackComp)
             }
         }
-        console.log(gameConfig)
     }
     GameLoop()
 }
