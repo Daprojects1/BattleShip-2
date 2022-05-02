@@ -151,15 +151,16 @@ const playerShipDetails = (shipCoordinates) => {
                 ship = ship.filter(shipCoord => shipCoord !== coord)
                 if (this.beenSelected(coord)) {
                     gameConfig.sameValue = true
-                  return "been already hit"
+                    return "been already hit"
                 } 
-                this.allHitValues.push(coord)
-                if (shipLength > ship.length) {             
+                if (shipLength > ship.length) {
                     if (ship.length === currentShip.isHit.length) currentShip.isSunk = true
-                    currentShip.isHit.push(coord)    
-                    return { currentShip, coord}
-                } 
-                 else return false
+                    currentShip.isHit.push(coord)
+                    return { currentShip, coord }
+                }
+                else {
+                    return false
+                }
             })
  
             return hitShip
@@ -184,18 +185,17 @@ const playerShipDetails = (shipCoordinates) => {
                 changeMessageBoard(`${shipNames[currentPlayer]} has MISSED at ${coord}`, timeoutVal)
                 playerDom.querySelector(`#${coord}`).classList.add("red")
             }
+            this.allHitValues.push(coord)
         },
         beenSelected(coord) {
             // function to make sure that you dont select a value twice. 
-            // const isBeenSelected = this.allHitValues.filter(hitCoord => hitCoord === coord)
-            // console.log(isBeenSelected)
-            // if (isBeenSelected.length >= 1) return true 
-            // else false
+            const isBeenSelected = this.allHitValues.filter(hitCoord => hitCoord === coord)
+            if (isBeenSelected.length >= 1) return true 
+            else false 
         }
         ,
         isAllShipsSunk(currentPlayer) {
             const isShipSunk = this.ships.map(ship => ship.isSunk)
-            // const isShipHit = this.ships.map(ship => ship.isHit) needs work. checking if hit
             if (isShipSunk.includes(false)) return null
             else {
                 changeMessageBoard(`${currentPlayer} has WON!`, 1100)
@@ -221,7 +221,7 @@ const GameBoard = (shipsLength) => {
         shipNames: ["playerShip", "computerShip"],
         gameOver: false,
         gameStarted: null,
-        sameValue: false
+        sameValue: false, 
     }
     let {player1, computer, shipNames} = gameConfig
     const { playerBoard, shipCoordinates, allCoordinates } = makeBoard(shipNames[0])
