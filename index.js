@@ -137,7 +137,7 @@ const makeBoard = (name) => {
     return { playerBoard, shipCoordinates, allCoordinates }
 }
 
-// handles the details that affect each ship. 
+// handles the details and methods for each ship. 
 const playerShipDetails = (shipCoordinates) => {
     return {
         allHitValues:[],
@@ -206,10 +206,12 @@ const playerShipDetails = (shipCoordinates) => {
     
 }
 
+// NEEDS WORK. ALLOWS COMP TO MAKE SMART SELECTIONS.
 const smartSelectCoord = (selectedValue) => {
     return selectedValue
 }
 
+// Makes sure conditions are met so that player can change to the next. 
 const canChangeCurrentPlayer = (gameConfig, val) => {
     if (!gameConfig.sameValue) gameConfig.currentPlayer = val
 }
@@ -232,15 +234,14 @@ const GameBoard = (shipsLength) => {
     const computerShipsCoord = createShips(shipsLength, compShipCoord, compCoord, shipNames[1])
     const player1ShipDets = playerShipDetails(playerShipsCoord)
     const computerShipsDets = playerShipDetails(computerShipsCoord)
-    const p = document.createElement("h1")
-    const b = document.querySelector("body")
-    b.appendChild(p)
+    // const p = document.createElement("h1")
+    // const b = document.querySelector("body")
+    // b.appendChild(p)
     const GameLoop = () => {
         gameConfig.sameValue = false
         const { currentPlayer } = gameConfig
         const player1Dom =  document.querySelector(`.${shipNames[player1]}`)
         const computerDom = document.querySelector(`.${shipNames[computer]}`)
-        // computerDom.classList.add("none")
         const inputattack = document.querySelector(".inputAttack")
         changeMessageBoard()  
         if (currentPlayer === computer && !gameConfig.gameOver) { 
@@ -269,7 +270,8 @@ const GameBoard = (shipsLength) => {
                     } 
                 }
             }
-            if (!gameConfig.gameStarted) {          
+            if (!gameConfig.gameStarted) { 
+                //allows the event listener to be added only once.
                 inputattack.addEventListener("keydown", attackComp)
                 gameConfig.gameStarted = true
             }
