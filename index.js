@@ -110,6 +110,7 @@ const initBoardOnPage = (board, shipName) => {
     }
 }
 
+
 // initializes the array for board items and then calls the init board on the page.
 const initBoardArr = (board, name) => {
     if (!board.length && typeof board === "object") {
@@ -144,15 +145,17 @@ const playerShipDetails = (shipCoordinates) => {
         ships: [...shipCoordinates.map(ship => { return { ship, isHit: [], isSunk: false, sLength: ship.length} })],
         damageShip(coord, gameConfig) {
             const allShips = this.ships.map(ships => ships.ship)
-            // rewrite this logic.  Can be very hard to read.
+            // rewrite this logic?  Can be very hard to read.
             const hitShip = allShips.map((ship, i) => {
                 const currentShip = this.ships[i]
                 const shipLength = ship.length;
+                // changes the ship just for this loop
                 ship = ship.filter(shipCoord => shipCoord !== coord)
                 if (this.beenSelected(coord)) {
                     gameConfig.sameValue = true
                     return "been already hit"
                 } 
+                // checks if initial length === the temporary filter length - line 152
                 if (shipLength > ship.length) {
                     if (ship.length === currentShip.isHit.length) currentShip.isSunk = true
                     currentShip.isHit.push(coord)
@@ -165,10 +168,10 @@ const playerShipDetails = (shipCoordinates) => {
  
             return hitShip
         },
-        handleHitShip(currentShip, playerDom, gamesConfig, coord) {
+        handleHitShip(currentShipArr, playerDom, gamesConfig, coord) {
             const { shipNames, currentPlayer } = gamesConfig
             const timeoutVal = currentPlayer === 0 ? 600 : 1000
-            const ship = currentShip.filter(i => typeof i === "object")[0]
+            const ship = currentShipArr.filter(i => typeof i === "object")[0]
             if (ship) {
                 const mainShip = ship.currentShip
                 if (mainShip.ship.length === mainShip.isHit.length) {
@@ -179,8 +182,10 @@ const playerShipDetails = (shipCoordinates) => {
                     changeMessageBoard(`${shipNames[currentPlayer]} HIT ${currentPlayer === 0 ? shipNames[1] : shipNames[0]} at ${coord}`,timeoutVal)
                 }
                 playerDom.querySelector(`#${coord}`).classList.add("green")
-            } else if (currentShip.filter(i => typeof i === "string").length >= 1) {
-                changeMessageBoard(`Sorry cannot hit the same spot again !`)
+                // filtering the currentship array to see whether it has any strings which means the value has been hit already. 
+            } else if (currentShipArr.filter(i => typeof i === "string").length >= 1) {
+                changeMessageBoard(`Sorry ${shipNames[currentPlayer]}, you cannot hit the same spot again !`)
+                gamesConfig.sameValue = true
             } else {
                 changeMessageBoard(`${shipNames[currentPlayer]} has MISSED at ${coord}`, timeoutVal)
                 playerDom.querySelector(`#${coord}`).classList.add("red")
@@ -206,11 +211,36 @@ const playerShipDetails = (shipCoordinates) => {
     
 }
 
+// const random = () => {
+//     const val = randomIntFromInterval(100,200)
+//     console.log(val)
+//     return 200/val > 1.33 ? +1 : -1
+// }
+
 // NEEDS WORK. ALLOWS COMP TO MAKE SMART SELECTIONS.
-const smartSelectCoord = (selectedValue) => {
+const smartSelectCoord = (selectedValue, gameConfig, compCoord) => {
+    if (gameConfig.compHit) {
+        const hitRow = compCoord.filter(c => c[0] === gameConfig.compHit[0])
+        let hitRowIndx = hitRow.indexOf(gameConfig.compHit)-1
+        // if (gameConfig.compHit === hitRow[hitRowIndx]) {
+        //      hitRowIndx = hitRow.indexOf(gameConfig.compHit)-1
+        // } else {
+        //     hitRowIndx = hitRow.indexOf(gameConfig.hit)+1
+        // }
+        const newIndx = compCoord.indexOf(hitRow[hitRowIndx])
+        return newIndx
+    } 
     return selectedValue
 }
 
+const smartHit = (hitShip, gameConfig) => {
+    const hit = hitShip.find(s => typeof s === "object")
+    if (hit) {
+        gameConfig.compHit = hit.coord
+    } else {
+        gameConfig.compHit = null;
+    }
+}
 // Makes sure conditions are met so that player can change to the next. 
 const canChangeCurrentPlayer = (gameConfig, val) => {
     if (!gameConfig.sameValue) gameConfig.currentPlayer = val
@@ -223,7 +253,7 @@ const GameBoard = (shipsLength) => {
         shipNames: ["playerShip", "computerShip"],
         gameOver: false,
         gameStarted: null,
-        sameValue: false, 
+        sameValue: false,
     }
     let {player1, computer, shipNames} = gameConfig
     const { playerBoard, shipCoordinates, allCoordinates } = makeBoard(shipNames[0])
@@ -234,9 +264,6 @@ const GameBoard = (shipsLength) => {
     const computerShipsCoord = createShips(shipsLength, compShipCoord, compCoord, shipNames[1])
     const player1ShipDets = playerShipDetails(playerShipsCoord)
     const computerShipsDets = playerShipDetails(computerShipsCoord)
-    // const p = document.createElement("h1")
-    // const b = document.querySelector("body")
-    // b.appendChild(p)
     const GameLoop = () => {
         gameConfig.sameValue = false
         const { currentPlayer } = gameConfig
@@ -247,9 +274,10 @@ const GameBoard = (shipsLength) => {
         if (currentPlayer === computer && !gameConfig.gameOver) { 
             gameConfig.gameStarted = true
             const selectedValue = randomIntFromInterval(0, allCoordinates.length - 1)
-            const compSelectedCoord = allCoordinates[smartSelectCoord(selectedValue)] 
+            const compSelectedCoord = allCoordinates[smartSelectCoord(selectedValue, gameConfig, compCoord)] 
             player1Dom.querySelector(`#${compSelectedCoord}`)    
             const hitShips = player1ShipDets.damageShip(compSelectedCoord, gameConfig)
+            smartHit(hitShips, gameConfig)
             player1ShipDets.handleHitShip(hitShips, player1Dom, gameConfig, compSelectedCoord)
             gameConfig.gameOver = player1ShipDets.isAllShipsSunk(shipNames[currentPlayer])
             canChangeCurrentPlayer(gameConfig,0)
