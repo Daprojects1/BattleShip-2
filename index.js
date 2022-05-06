@@ -211,22 +211,15 @@ const playerShipDetails = (shipCoordinates) => {
     
 }
 
-// const random = () => {
-//     const val = randomIntFromInterval(100,200)
-//     console.log(val)
-//     return 200/val > 1.33 ? +1 : -1
-// }
 
 // NEEDS WORK. ALLOWS COMP TO MAKE SMART SELECTIONS.
-const smartSelectCoord = (selectedValue, gameConfig, compCoord) => {
+const smartSelectCoord = (selectedValue, gameConfig,compCoord, hitCoords) => {
     if (gameConfig.compHit) {
         const hitRow = compCoord.filter(c => c[0] === gameConfig.compHit[0])
         let hitRowIndx = hitRow.indexOf(gameConfig.compHit)-1
-        // if (gameConfig.compHit === hitRow[hitRowIndx]) {
-        //      hitRowIndx = hitRow.indexOf(gameConfig.compHit)-1
-        // } else {
-        //     hitRowIndx = hitRow.indexOf(gameConfig.hit)+1
-        // }
+        if (hitCoords.filter(i => i === hitRow[hitRowIndx]).length === 1 ) {
+             hitRowIndx = hitRow.indexOf(gameConfig.compHit)+1
+        } 
         const newIndx = compCoord.indexOf(hitRow[hitRowIndx])
         return newIndx
     } 
@@ -274,7 +267,7 @@ const GameBoard = (shipsLength) => {
         if (currentPlayer === computer && !gameConfig.gameOver) { 
             gameConfig.gameStarted = true
             const selectedValue = randomIntFromInterval(0, allCoordinates.length - 1)
-            const compSelectedCoord = allCoordinates[smartSelectCoord(selectedValue, gameConfig, compCoord)] 
+            const compSelectedCoord = allCoordinates[smartSelectCoord(selectedValue, gameConfig, compCoord,player1ShipDets.allHitValues)] 
             player1Dom.querySelector(`#${compSelectedCoord}`)    
             const hitShips = player1ShipDets.damageShip(compSelectedCoord, gameConfig)
             smartHit(hitShips, gameConfig)
