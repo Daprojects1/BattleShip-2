@@ -1,6 +1,6 @@
 .grid {
     display: grid;
-    margin: 90px auto;
+    margin: 50px auto;
     grid-template-columns: repeat(10, 50px);
     grid-template-rows: repeat(10, 50px);
     width: 70vw;
@@ -17,7 +17,6 @@
 .ship {
     background: rgb(107, 90, 90);
 }
-
 
 
 .playerShip::before {

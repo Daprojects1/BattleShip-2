@@ -248,6 +248,8 @@ const GameBoard = (shipsLength) => {
         gameStarted: null,
         sameValue: false,
     }
+
+
     let {player1, computer, shipNames} = gameConfig
     const { playerBoard, shipCoordinates, allCoordinates } = makeBoard(shipNames[0])
     const { playerBoard: compBoad,
@@ -257,6 +259,8 @@ const GameBoard = (shipsLength) => {
     const computerShipsCoord = createShips(shipsLength, compShipCoord, compCoord, shipNames[1])
     const player1ShipDets = playerShipDetails(playerShipsCoord)
     const computerShipsDets = playerShipDetails(computerShipsCoord)
+
+
     const GameLoop = () => {
         gameConfig.sameValue = false
         const { currentPlayer } = gameConfig
@@ -264,6 +268,9 @@ const GameBoard = (shipsLength) => {
         const computerDom = document.querySelector(`.${shipNames[computer]}`)
         const inputattack = document.querySelector(".inputAttack")
         changeMessageBoard()  
+        
+// Hides computer board
+        computerDom.classList.add('none')
         if (currentPlayer === computer && !gameConfig.gameOver) { 
             gameConfig.gameStarted = true
             const selectedValue = randomIntFromInterval(0, allCoordinates.length - 1)
