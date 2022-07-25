@@ -94,16 +94,26 @@ const initBoardOnPage = (board, shipName) => {
     mainDiv.classList.add(shipName)
     body.appendChild(mainDiv)
     if (board.length && board[0].positions[0].coordinate) {
-        board.forEach(boardX => {
+        board.forEach((boardX, indx) => {
             const xDiv = document.createElement("div")
             boardX.positions.forEach(position => {
+          
                 const yDiv = document.createElement("div")
+
+                if (indx === 0) { 
+                    yDiv.innerHTML = `<p class='number-coord'>${position.coordinate[1]}</p >`
+                }
+                if (position?.coordinate?.includes('0')) {
+                    yDiv.innerHTML += `<p class='letter-coord'>${position.coordinate[0]?.toUpperCase()}</p >`
+                }
                 yDiv.classList.add("coordStyle")
+
                 yDiv.setAttribute("id", `${position.coordinate}`)
                 position.domObject = yDiv
                 xDiv.appendChild(yDiv)
             })
             mainDiv.appendChild(xDiv)
+            
         })
     } else {
         throw new Error("Sorry, the game board has not been initialized")
